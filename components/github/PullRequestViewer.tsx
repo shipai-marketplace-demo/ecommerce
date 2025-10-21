@@ -52,32 +52,97 @@ export function PullRequestViewer({ onBack }: PullRequestViewerProps) {
   const [error, setError] = useState<string | null>(null);
   const [expandedPRs, setExpandedPRs] = useState<Set<number>>(new Set());
   const [expandedProviders, setExpandedProviders] = useState<Map<number, Set<string>>>(new Map());
+  const [creatingPR, setCreatingPR] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
 
-  useEffect(() => {
-    async function fetchPullRequests() {
-      try {
+  const fetchPullRequests = async (showLoading = true) => {
+    try {
+      if (showLoading) {
         setLoading(true);
-        setError(null);
+      }
+      setError(null);
 
-        // Fetch from our API route (which handles GitHub authentication)
-        const response = await fetch('/api/github/prs');
+      // Fetch from our API route (which handles GitHub authentication)
+      const response = await fetch('/api/github/prs');
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch pull requests');
-        }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch pull requests');
+      }
 
-        const prsWithComments = await response.json();
-        setPullRequests(prsWithComments);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch pull requests');
-      } finally {
+      const prsWithComments = await response.json();
+      setPullRequests(prsWithComments);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch pull requests');
+    } finally {
+      if (showLoading) {
         setLoading(false);
       }
     }
+  };
 
+  useEffect(() => {
     fetchPullRequests();
   }, []);
+
+  // Auto-refresh effect
+  useEffect(() => {
+    if (refreshInterval) {
+      const interval = setInterval(() => {
+        fetchPullRequests(false); // Don't show loading spinner on auto-refresh
+      }, refreshInterval);
+
+      return () => clearInterval(interval);
+    }
+  }, [refreshInterval]);
+
+  const createTestPR = async () => {
+    try {
+      setCreatingPR(true);
+      setError(null);
+
+      const response = await fetch('/api/github/create-buggy-pr', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create test PR');
+      }
+
+      const result = await response.json();
+
+      // Immediately refresh to show the new PR (without loading screen)
+      await fetchPullRequests(false);
+
+      // Set aggressive refresh for the first 30 seconds (every 3 seconds)
+      setRefreshInterval(3000);
+
+      // After 30 seconds, switch to slower refresh (every 10 seconds)
+      setTimeout(() => {
+        setRefreshInterval(10000);
+      }, 30000);
+
+      // After 2 minutes, switch to even slower refresh (every 30 seconds)
+      setTimeout(() => {
+        setRefreshInterval(30000);
+      }, 120000);
+
+      // Stop auto-refresh after 10 minutes
+      setTimeout(() => {
+        setRefreshInterval(null);
+      }, 600000);
+
+      // Expand the new PR automatically
+      if (result.pr?.number) {
+        setExpandedPRs((prev) => new Set([...prev, result.pr.number]));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create test PR');
+    } finally {
+      setCreatingPR(false);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -122,6 +187,10 @@ export function PullRequestViewer({ onBack }: PullRequestViewerProps) {
   const truncateText = (text: string, maxLength: number = 100) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
+  };
+
+  const pluralize = (count: number, singular: string, plural: string) => {
+    return count === 1 ? singular : plural;
   };
 
   const togglePR = (prNumber: number) => {
@@ -185,9 +254,19 @@ export function PullRequestViewer({ onBack }: PullRequestViewerProps) {
         <Container>
         <div className="mb-8 flex justify-between items-center">
           <h2 className="text-3xl md:text-4xl font-bold">Open Pull Requests</h2>
-          <Button onClick={onBack} variant="secondary" size="md">
-            Back to Home
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={createTestPR}
+              variant="primary"
+              size="md"
+              disabled={creatingPR}
+            >
+              {creatingPR ? 'Creating PR...' : 'Create Test PR'}
+            </Button>
+            <Button onClick={onBack} variant="secondary" size="md">
+              Back to Home
+            </Button>
+          </div>
         </div>
 
         {pullRequests.length === 0 ? (
@@ -216,9 +295,9 @@ export function PullRequestViewer({ onBack }: PullRequestViewerProps) {
                     const expandedProvidersForPR = expandedProviders.get(pr.number) || new Set();
 
                     return (
-                      <>
+                      <React.Fragment key={pr.number}>
                         {/* PR Row */}
-                        <tr key={pr.number} className="hover:bg-gray-50">
+                        <tr className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <button
                               onClick={() => togglePR(pr.number)}
@@ -253,7 +332,11 @@ export function PullRequestViewer({ onBack }: PullRequestViewerProps) {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="text-sm text-gray-900">
-                              {pr.commentsList.filter(c => c.status === 'Open').length} open comments / {pr.commentsList.length}
+                              {(() => {
+                                const openCount = pr.commentsList.filter(c => c.status === 'Open').length;
+                                const totalCount = pr.commentsList.length;
+                                return `${openCount} open ${pluralize(openCount, 'comment', 'comments')} / ${totalCount}`;
+                              })()}
                             </span>
                           </td>
                         </tr>
@@ -316,7 +399,11 @@ export function PullRequestViewer({ onBack }: PullRequestViewerProps) {
                                         </td>
                                         <td className="px-6 py-3 whitespace-nowrap">
                                           <span className="text-sm text-gray-600">
-                                            {comments.filter(c => c.status === 'Open').length} open comments / {comments.length}
+                                            {(() => {
+                                              const openCount = comments.filter(c => c.status === 'Open').length;
+                                              const totalCount = comments.length;
+                                              return `${openCount} open ${pluralize(openCount, 'comment', 'comments')} / ${totalCount}`;
+                                            })()}
                                           </span>
                                         </td>
                                       </tr>
@@ -367,7 +454,7 @@ export function PullRequestViewer({ onBack }: PullRequestViewerProps) {
                             )}
                           </>
                         )}
-                      </>
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
