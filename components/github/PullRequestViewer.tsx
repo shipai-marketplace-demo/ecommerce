@@ -193,6 +193,10 @@ export function PullRequestViewer({ onBack }: PullRequestViewerProps) {
     return count === 1 ? singular : plural;
   };
 
+  const stripBotSuffix = (username: string) => {
+    return username.replace(/\[bot\]$/, '');
+  };
+
   const togglePR = (prNumber: number) => {
     setExpandedPRs((prev) => {
       const newSet = new Set(prev);
@@ -393,7 +397,7 @@ export function PullRequestViewer({ onBack }: PullRequestViewerProps) {
                                               className="rounded-full"
                                             />
                                             <span className="text-sm font-medium text-gray-900">
-                                              {author}
+                                              {stripBotSuffix(author)}
                                             </span>
                                           </div>
                                         </td>

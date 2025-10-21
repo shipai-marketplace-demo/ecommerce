@@ -185,13 +185,8 @@ export async function GET() {
             allComments = [...allComments, ...reviewComments];
           }
 
-          // Filter out vercel bot comments
-          const filteredComments = allComments.filter(
-            (comment) => comment.user.login !== 'vercel[bot]'
-          );
-
           // Process each comment to extract status and severity
-          const processedComments: ProcessedComment[] = filteredComments.map((comment) => {
+          const processedComments: ProcessedComment[] = allComments.map((comment) => {
             const { status, severity } = extractMetadata(comment);
             return { ...comment, status, severity };
           });
