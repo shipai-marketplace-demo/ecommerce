@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
+    "@mixedbread/sdk": "^0.35.1",
     "@opentelemetry/api-logs": "^0.206.0",
     "@opentelemetry/instrumentation": "^0.206.0",
     "@opentelemetry/sdk-logs": "^0.206.0",
@@ -20,6 +21,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
+    "swr": "^2.3.6",
     "zod": "^3.24.1",
     "zustand": "^5.0.2"
   },

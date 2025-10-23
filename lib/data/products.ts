@@ -265,7 +265,7 @@ export const products: Product[] = [
     name: 'Stainless Steel Cookware Set',
     description: 'Professional-grade 12-piece cookware set. Non-stick coating, oven-safe, and dishwasher friendly.',
     price: 299.99,
-    image: 'https://images.unsplash.com/photo-1584990347449-49b5452a7d2d?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&q=80',
     category: 'home-garden',
     stock: 28,
     featured: false,
@@ -312,7 +312,7 @@ export const products: Product[] = [
 
 export const categories = [
   { id: 'electronics', name: 'Electronics', count: products.filter(p => p.category === 'electronics').length },
-  { id: 'clothing', name: 'Clothing', count: products.filter(p => p.category === 'clothing').length },
+  { id: 'clothing', name: 'Clothing', count: '20+' as any }, // Includes Mixedbread products
   { id: 'books', name: 'Books', count: products.filter(p => p.category === 'books').length },
   { id: 'home-garden', name: 'Home & Garden', count: products.filter(p => p.category === 'home-garden').length },
 ];
