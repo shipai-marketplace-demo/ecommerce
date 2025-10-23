@@ -163,65 +163,57 @@ export async function GET() {
     // Fetch comments for each PR (both issue comments and review comments)
     const prsWithComments = await Promise.all(
       filteredPRs.map(async (pr: any) => {
-        try {
-          // Fetch issue comments
-          const issueCommentsResponse = await fetch(
-            `https://api.github.com/repos/shipai-marketplace-demo/ecommerce/issues/${pr.number}/comments`,
-            { headers }
-          );
+        // Fetch issue comments
+        const issueCommentsResponse = await fetch(
+          `https://api.github.com/repos/shipai-marketplace-demo/ecommerce/issues/${pr.number}/comments`,
+          { headers }
+        );
 
-          // Fetch review comments (inline code comments)
-          const reviewCommentsResponse = await fetch(
-            `https://api.github.com/repos/shipai-marketplace-demo/ecommerce/pulls/${pr.number}/comments`,
-            { headers }
-          );
-
-          let allComments: GitHubComment[] = [];
-
-          if (issueCommentsResponse.ok) {
-            const issueComments = await issueCommentsResponse.json();
-            allComments = [...allComments, ...issueComments];
-          }
-
-          if (reviewCommentsResponse.ok) {
-            const reviewComments = await reviewCommentsResponse.json();
-            allComments = [...allComments, ...reviewComments];
-          }
-
-          // Process each comment to extract status and severity
-          const processedComments: ProcessedComment[] = allComments.map((comment) => {
-            const { status, severity } = extractMetadata(comment);
-            return { ...comment, status, severity };
-          });
-
-          // Sort by creation date
-          processedComments.sort(
-            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          );
-
-          // Group by provider
-          const groupedComments = groupCommentsByProvider(processedComments);
-
-          return {
-            number: pr.number,
-            title: pr.title,
-            html_url: pr.html_url,
-            user: pr.user,
-            state: pr.state,
-            created_at: pr.created_at,
-            updated_at: pr.updated_at,
-            body: pr.body,
-            commentsList: processedComments,
-            groupedComments,
-          };
-        } catch (error) {
-          console.error(`Error fetching comments for PR #${pr.number}:`, error);
-          return {
-            ...pr,
-            commentsList: [],
-            groupedComments: {},
-          };
+        if (!issueCommentsResponse.ok) {
+          throw new Error(`Failed to fetch issue comments for PR #${pr.number}: ${issueCommentsResponse.statusText}`);
         }
+
+        // Fetch review comments (inline code comments)
+        const reviewCommentsResponse = await fetch(
+          `https://api.github.com/repos/shipai-marketplace-demo/ecommerce/pulls/${pr.number}/comments`,
+          { headers }
+        );
+
+        if (!reviewCommentsResponse.ok) {
+          throw new Error(`Failed to fetch review comments for PR #${pr.number}: ${reviewCommentsResponse.statusText}`);
+        }
+
+        const issueComments = await issueCommentsResponse.json();
+        const reviewComments = await reviewCommentsResponse.json();
+
+        const allComments: GitHubComment[] = [...issueComments, ...reviewComments];
+
+        // Process each comment to extract status and severity
+        const processedComments: ProcessedComment[] = allComments.map((comment) => {
+          const { status, severity } = extractMetadata(comment);
+          return { ...comment, status, severity };
+        });
+
+        // Sort by creation date
+        processedComments.sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+
+        // Group by provider
+        const groupedComments = groupCommentsByProvider(processedComments);
+
+        return {
+          number: pr.number,
+          title: pr.title,
+          html_url: pr.html_url,
+          user: pr.user,
+          state: pr.state,
+          created_at: pr.created_at,
+          updated_at: pr.updated_at,
+          body: pr.body,
+          commentsList: processedComments,
+          groupedComments,
+        };
       })
     );
 
