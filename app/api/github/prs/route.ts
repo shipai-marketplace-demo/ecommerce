@@ -157,9 +157,12 @@ export async function GET() {
 
     const prs = await prsResponse.json();
 
+    // Filter to only show PRs from tonypan2
+    const filteredPRs = prs.filter((pr: any) => pr.user.login === 'tonypan2');
+
     // Fetch comments for each PR (both issue comments and review comments)
     const prsWithComments = await Promise.all(
-      prs.map(async (pr: any) => {
+      filteredPRs.map(async (pr: any) => {
         try {
           // Fetch issue comments
           const issueCommentsResponse = await fetch(
