@@ -173,11 +173,21 @@ export function PullRequestViewer({ onBack }: PullRequestViewerProps) {
       <section className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-20">
         <Container>
           <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Error Loading Pull Requests</h2>
+            <h2 className="text-2xl font-bold mb-4">Couldn&apos;t Fetch Pull Requests</h2>
             <p className="text-xl text-primary-100 mb-6">{error}</p>
-            <Button onClick={onBack} variant="secondary">
-              Back to Home
-            </Button>
+            <div className="flex gap-4 justify-center">
+              <a
+                href="https://github.com/shipai-marketplace-demo/ecommerce/pulls?q=sort%3Aupdated-desc+is%3Apr+is%3Aopen+author%3Atonypan2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block px-6 py-3 bg-white text-primary-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                View PRs on GitHub
+              </a>
+              <Button onClick={onBack} variant="secondary">
+                Back to Home
+              </Button>
+            </div>
           </div>
         </Container>
       </section>
