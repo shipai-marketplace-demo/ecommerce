@@ -6,6 +6,7 @@ import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { PullRequestViewer } from '@/components/github/PullRequestViewer';
+import { HeroBanner } from '@/components/layout/HeroBanner';
 import { getFeaturedProducts, categories } from '@/lib/data/products';
 
 export default function HomePage() {
@@ -123,42 +124,18 @@ export default function HomePage() {
 
   return (
     <div className="space-y-16 py-8">
-      <section className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-20">
-        <Container>
-          <div className="flex justify-between items-start">
-            <div className="max-w-3xl">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-                Welcome to ShopHub
-              </h1>
-              <p className="text-xl md:text-2xl mb-8 text-primary-100">
-                Discover amazing products at unbeatable prices. Shop the latest in
-                electronics, fashion, books, and home goods.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link href="/products">
-                  <Button size="lg" variant="secondary">
-                    Shop All Products
-                  </Button>
-                </Link>
-                <Link href="/products?category=electronics">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary-600">
-                    Browse Electronics
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            <div>
-              <Button
-                onClick={() => setShowPullRequests(true)}
-                variant="secondary"
-                size="md"
-              >
-                Pull Requests
-              </Button>
-            </div>
-          </div>
-        </Container>
-      </section>
+      <div className="relative">
+        <HeroBanner />
+        <div className="absolute top-4 right-4 z-20">
+          <Button
+            onClick={() => setShowPullRequests(true)}
+            variant="secondary"
+            size="md"
+          >
+            Pull Requests
+          </Button>
+        </div>
+      </div>
 
       <Container>
         <section>
