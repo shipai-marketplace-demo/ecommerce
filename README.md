@@ -5,11 +5,12 @@ A modern, full-featured e-commerce application built with Next.js 15, TypeScript
 ## Features
 
 ### Product Management
-- 27+ products across 4 categories (Electronics, Clothing, Books, Home & Garden)
+- 27+ hardcoded products across 4 categories (Electronics, Clothing, Books, Home & Garden)
+- **Mixedbread Integration** - Automatically fetch and display additional clothing products from Mixedbread store
 - Product grid with responsive layout
 - Product detail pages with image, description, and ratings
 - Category filtering
-- Search functionality
+- Search functionality (searches both hardcoded and Mixedbread products)
 - Featured products showcase
 - Low stock and out-of-stock indicators
 - Related products recommendations
@@ -48,6 +49,8 @@ A modern, full-featured e-commerce application built with Next.js 15, TypeScript
 - **State Management:** Zustand
 - **Form Handling:** React Hook Form
 - **Validation:** Zod
+- **AI Search:** Mixedbread (optional)
+- **Data Fetching:** SWR
 - **Deployment:** Vercel
 
 ## Getting Started
@@ -137,7 +140,30 @@ vercel
 
 ## Environment Variables
 
-No environment variables required for basic functionality. All product data is hardcoded.
+### Required for Mixedbread Integration (Optional)
+
+If you want to enable Mixedbread AI search and display additional clothing products:
+
+```bash
+# Copy the example file
+cp .env.example .env.local
+
+# Add your Mixedbread credentials
+MXBAI_API_KEY=your-api-key
+MXBAI_STORE_ID=your-store-id
+```
+
+**Getting Mixedbread Credentials:**
+1. **Via Vercel Integration** (Recommended):
+   - Install the Mixedbread integration from your Vercel project
+   - Credentials will be automatically added to your environment
+
+2. **Via Mixedbread Platform**:
+   - Sign up at [Mixedbread Platform](https://platform.mixedbread.com)
+   - Create an API key and store
+   - Copy your credentials to `.env.local`
+
+**Note:** The app works without Mixedbread configuration - it will simply show only the hardcoded products.
 
 ## Future Enhancements
 

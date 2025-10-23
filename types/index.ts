@@ -60,3 +60,33 @@ export interface Order {
   createdAt: Date;
   status: 'pending' | 'processing' | 'completed';
 }
+
+// Mixedbread integration types
+export interface MixedbreadMetadata {
+  name?: string;
+  description?: string;
+  price?: number;
+  color?: string;
+  style?: string;
+  gender?: string;
+  season?: string;
+  pattern?: string;
+  material?: string;
+  filename?: string;
+  notable_details?: string;
+  [key: string]: unknown;
+}
+
+export interface MixedbreadSearchChunk {
+  text?: string;
+  score?: number;
+  image_url?: {
+    url: string;
+  };
+  metadata?: MixedbreadMetadata;
+  generated_metadata?: MixedbreadMetadata;
+}
+
+export interface MixedbreadSearchResponse {
+  results: MixedbreadSearchChunk[];
+}
